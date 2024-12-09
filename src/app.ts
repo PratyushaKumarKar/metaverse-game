@@ -5,14 +5,12 @@ import '@babylonjs/loaders';
 export function initializeApp() {
     const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
     const engine = new BABYLON.Engine(canvas, true);
-
     const scene = new BABYLON.Scene(engine);
-
     const camera = new BABYLON.ArcRotateCamera(
         "camera",
         Math.PI / 2,
         Math.PI / 2,
-        10,
+        5,
         new BABYLON.Vector3(0, 0, 0),
         scene
     );
@@ -24,7 +22,7 @@ export function initializeApp() {
         const gunMesh = scene.getMeshByName("Barrel_Body_Base_Color_0");
         if (gunMesh) {
             gunMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-            gunMesh.position = new BABYLON.Vector3(0, 1, 0);
+            // gunMesh.position = new BABYLON.Vector3(0, 1, 0);
             console.log("Gun model loaded and positioned!");
         } else {
             console.error("Gun mesh not found!");
@@ -33,6 +31,20 @@ export function initializeApp() {
 
     WebXRDefaultExperience.CreateAsync(scene).then((xr) => {
         console.log("WebXR experience enabled!");
+
+        xr.input.onControllerAddedObservable.add((controller) => {
+            console.log("Controller added:", controller);
+
+            // Attach gun to the grip of the controller
+            const gunMesh = scene.getMeshByName("Barrel_Body_Base_Color_0");
+            if (gunMesh) {
+                //@ts-ignore
+                gunMesh.parent = controller.grip; 
+                gunMesh.position = new BABYLON.Vector3(0, 0, 0); 
+            } else {
+                console.error("Gun mesh not found to attach!");
+            }
+        });
     });
 
     engine.runRenderLoop(() => {
